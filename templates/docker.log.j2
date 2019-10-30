@@ -1,0 +1,6 @@
+/var/log/docker.log {
+  size {{ docker_log_size }}M
+  rotate {{ docker_log_rotate }}
+  missingok
+  compress
+}

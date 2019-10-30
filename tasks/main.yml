@@ -1,0 +1,6 @@
+---
+
+- import_tasks: extras.yml
+  tags:
+    - docker
+    - docker-extras

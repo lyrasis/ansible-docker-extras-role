@@ -1,0 +1,5 @@
+# Docker logging
+if $programname startswith 'docker' then {
+  {{ docker_log }}
+  stop
+}

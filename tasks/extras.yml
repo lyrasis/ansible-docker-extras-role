@@ -1,0 +1,55 @@
+---
+
+- name: apply rsyslog docker config
+  template:
+    src: 10-docker.conf.j2
+    dest: /etc/rsyslog.d/10-docker.conf
+    backup: yes
+
+- name: apply logrotate docker config
+  template:
+    src: docker.log.j2
+    dest: /etc/logrotate.d/docker
+    backup: yes
+  register: logrotate_docker
+
+- name: bounce rsyslog when docker config updated
+  service:
+    name: rsyslog
+    state: restarted
+  when: logrotate_docker.changed
+
+- name: add docker maintenance cron jobs
+  cron:
+    name: "{{ item.name }}"
+    hour: "{{ item.hour }}"
+    minute: "{{ item.minute }}"
+    job: "{{ item.job }}"
+  with_items:
+    - name: docker rm exited
+      hour: 6
+      minute: 0
+      job: '/usr/bin/docker rm -v $(/usr/bin/docker ps -a -q -f status=exited) >/dev/null 2>&1'
+    - name: docker rm dangling
+      hour: 6
+      minute: 5
+      job: '/usr/bin/docker rmi $(/usr/bin/docker images -f "dangling=true" -q) >/dev/null 2>&1'
+
+- name: create instance compose directories
+  file:
+    path: "{{ docker_base_path }}/{{ item.name }}"
+    state: directory
+  with_items: "{{ docker_instances }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: create instance docker-compose.yml
+  template:
+    src: "templates/compose-{{ docker_compose_suffix }}.yml.j2"
+    dest: "{{ docker_base_path }}/{{ item.name }}/docker-compose.yml"
+    mode: "664"
+    group: docker
+    backup: yes
+  with_items: "{{ docker_instances }}"
+  loop_control:
+    label: "{{ item.name }}"

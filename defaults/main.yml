@@ -1,0 +1,23 @@
+---
+
+# instances is an array of dicts that have at least a name key
+# example: docker_instances: [ { name: "nginx" } ]
+docker_instances: []
+
+# the base path used for docker instances i.e. /root/nginx
+docker_base_path: "/root"
+
+# instance suffix is a name used to identify a docker compose template
+# of the form: templates/compose-{{ docker_compose_suffix }}.yml.j2
+# these should be defined at the root level of the playbook
+# example: docker_compose_suffix: nginx
+docker_compose_suffix: ""
+
+# docker log file
+docker_log: /var/log/docker.log
+
+# logrotate size in MB for docker log
+docker_log_size: 512
+
+# logrotate days for docker log
+docker_log_rotate: 2
